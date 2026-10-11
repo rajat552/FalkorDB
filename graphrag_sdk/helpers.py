@@ -1,7 +1,11 @@
+from __future__ import annotations
 import re
-import graphrag_sdk
 import logging
+from typing import TYPE_CHECKING
 from fix_busted_json import repair_json
+
+if TYPE_CHECKING:
+    from graphrag_sdk.ontology import Ontology
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +82,7 @@ def extract_cypher(text: str):
 
 
 def validate_cypher(
-    cypher: str, ontology: graphrag_sdk.Ontology
+    cypher: str, ontology: Ontology
 ) -> list[str] | None:
     try:
         if not cypher or len(cypher) == 0:

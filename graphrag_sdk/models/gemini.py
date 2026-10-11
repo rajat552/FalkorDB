@@ -27,8 +27,9 @@ class GeminiGenerativeModel(GenerativeModel):
     ):
         self._model_name = model_name
         self._generation_config = generation_config
-        self._system_instruction = system_instruction
-        configure(api_key=os.environ["GOOGLE_API_KEY"])
+        api_key = os.environ.get("GOOGLE_API_KEY", "")
+        if api_key:
+            configure(api_key=api_key)
 
 
     def _get_model(self) -> GoogleGenerativeModel:
