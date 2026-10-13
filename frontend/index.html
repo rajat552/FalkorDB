@@ -272,6 +272,90 @@
 
   </main>
 
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <!-- Col 1: Brand & Overview -->
+      <div class="footer-col brand-col">
+        <div class="footer-brand">
+          <div class="brand-icon footer-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="6" cy="6" r="3"/>
+              <circle cx="18" cy="6" r="3"/>
+              <circle cx="18" cy="18" r="3"/>
+              <circle cx="6" cy="18" r="3"/>
+              <line x1="9" y1="6" x2="15" y2="6"/>
+              <line x1="6" y1="9" x2="6" y2="15"/>
+              <line x1="9" y1="18" x2="15" y2="18"/>
+              <line x1="18" y1="9" x2="18" y2="15"/>
+              <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="footer-title">Company Brain</h3>
+            <span class="brand-badge footer-badge">⚡ FalkorDB GraphRAG</span>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Enterprise knowledge intelligence assistant for IT helpdesks and SRE teams. Bridges incidents, service architectures, and runbooks with verifiable citations and zero hallucinations.
+        </p>
+        <div class="footer-badges">
+          <span class="footer-tag">⚡ Track 03: Enterprise RAG</span>
+          <span class="footer-tag">🛡️ 100% Grounded Citations</span>
+          <span class="footer-tag">🚀 Sub-10ms Cypher</span>
+        </div>
+      </div>
+
+      <!-- Col 2: Navigation -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Navigation</h4>
+        <ul class="footer-links">
+          <li><a href="javascript:void(0)" onclick="switchTab('workspace')"><span class="link-arrow">›</span> Workspace & Chat</a></li>
+          <li><a href="javascript:void(0)" onclick="switchTab('documents')"><span class="link-arrow">›</span> Documents Manager</a></li>
+          <li><a href="javascript:void(0)" onclick="switchTab('explorer')"><span class="link-arrow">›</span> Graph Explorer</a></li>
+          <li><a href="javascript:void(0)" onclick="clearChat()"><span class="link-arrow">›</span> Clear Chat History</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: API & Diagnostics -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Developer & APIs</h4>
+        <ul class="footer-links">
+          <li><a href="/docs" target="_blank" rel="noopener"><span class="link-arrow">›</span> Interactive Swagger Docs</a></li>
+          <li><a href="/redoc" target="_blank" rel="noopener"><span class="link-arrow">›</span> ReDoc API Reference</a></li>
+          <li><a href="/health" target="_blank" rel="noopener"><span class="link-arrow">›</span> Diagnostics & Health API</a></li>
+          <li><a href="http://localhost:3000" target="_blank" rel="noopener"><span class="link-arrow">›</span> FalkorDB Studio GUI</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Architecture Stack -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Architecture Stack</h4>
+        <div class="stack-pills">
+          <span class="stack-pill">FalkorDB v1.7</span>
+          <span class="stack-pill">FastAPI</span>
+          <span class="stack-pill">GraphRAG SDK</span>
+          <span class="stack-pill">Cypher MERGE</span>
+          <span class="stack-pill">SHA-256 Auth</span>
+          <span class="stack-pill">Dual-Mode LLM</span>
+          <span class="stack-pill">Sliding Chunks</span>
+          <span class="stack-pill">Pytest 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <div class="footer-bottom-container">
+        <p class="footer-copy">© 2026 Company Brain — Track 03 Enterprise RAG. Released under the MIT License.</p>
+        <div class="footer-status-pill">
+          <span class="status-dot"></span>
+          <span>FalkorDB Graph Engine Active</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <!-- Chunk Viewer Modal -->
   <div class="modal-backdrop" id="chunk-modal" style="display: none;" onclick="closeChunkModal(event)">
     <div class="modal-dialog" onclick="event.stopPropagation()">

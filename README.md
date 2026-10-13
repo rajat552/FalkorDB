@@ -561,4 +561,20 @@ python -m pytest tests/test_helper_validate_cypher.py tests/test_kg.py -v
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**[Company Brain](https://github.com/rajat552/FalkorDB)** — Enterprise Knowledge Intelligence Engine  
+*Powered by [FalkorDB](https://falkordb.com/) • Track 03: Enterprise RAG Hackathon*
+
+[![FalkorDB Studio](https://img.shields.io/badge/FalkorDB_Studio-Port_3000-FF8101?style=flat-square&logo=redis)](http://localhost:3000)
+[![Swagger API](https://img.shields.io/badge/Swagger_Docs-/docs-009688?style=flat-square&logo=fastapi)](http://localhost:8000/docs)
+[![Dashboard](https://img.shields.io/badge/Web_Dashboard-Localhost_8000-6366F1?style=flat-square)](http://localhost:8000)
+
+<sub>Designed for Enterprise SREs, IT Helpdesks, and Platform Teams. Built with zero-hallucination GraphRAG.</sub>
+
+</div>
+

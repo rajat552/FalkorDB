@@ -346,7 +346,8 @@ body {
   grid-template-columns: 1fr 430px;
   gap: 28px;
   flex: 1;
-  height: calc(100vh - 130px);
+  min-height: 640px;
+  height: calc(100vh - 160px);
 }
 
 .chat-container {
@@ -1265,6 +1266,10 @@ body {
   .metrics-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1281,3 +1286,194 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+@media (max-width: 600px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 36px 20px 24px;
+  }
+  .footer-bottom-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   APP FOOTER (PawSpa Warm Luxury Style)
+   ========================================================================== */
+.app-footer {
+  margin-top: 48px;
+  background: #FFFDFB;
+  border-top: 1.5px solid var(--border-subtle);
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 -4px 24px rgba(250, 123, 56, 0.04);
+}
+
+.footer-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 48px 32px 36px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 40px;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.brand-col {
+  padding-right: 20px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.footer-title {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.footer-badge {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  margin-top: 2px;
+}
+
+.footer-desc {
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 440px;
+}
+
+.footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.footer-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand-orange);
+  background: var(--brand-orange-bg);
+  border: 1px solid var(--brand-orange-border);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.footer-col-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links li a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.footer-links li a:hover {
+  color: var(--brand-orange);
+  transform: translateX(3px);
+}
+
+.link-arrow {
+  font-weight: 700;
+  color: var(--brand-orange);
+  opacity: 0.7;
+}
+
+.stack-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.stack-pill {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+}
+
+.stack-pill:hover {
+  border-color: var(--brand-orange);
+  color: var(--brand-orange);
+  transform: translateY(-1px);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-subtle);
+  background: #FFF9F5;
+  padding: 18px 32px;
+}
+
+.footer-bottom-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.footer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-emerald);
+  background: var(--accent-emerald-bg);
+  border: 1px solid var(--accent-emerald-border);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
