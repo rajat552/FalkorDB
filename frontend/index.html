@@ -7,8 +7,9 @@
   <meta name="description" content="Company Brain is an enterprise GraphRAG assistant powered by FalkorDB for relationship-aware IT knowledge intelligence with verifiable citations.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#FFF9F5">
+  <link rel="stylesheet" href="style.css?v=pawspa">
 </head>
 <body>
   <!-- Background Glow FX -->
@@ -33,7 +34,7 @@
       </div>
       <div>
         <h1 class="brand-title">Company Brain</h1>
-        <span class="brand-badge">Track 03 • Enterprise GraphRAG</span>
+        <span class="brand-badge">⚡ Enterprise GraphRAG</span>
       </div>
     </div>
 
@@ -76,7 +77,7 @@
         <div class="chat-container">
           <div class="chat-header">
             <div>
-              <h2>IT Helpdesk Intelligence</h2>
+              <h2>IT Helpdesk <span class="gradient-text">Intelligence</span></h2>
               <p class="subtitle">Ask cross-document questions grounded in runbooks, incidents, and ownership graphs.</p>
             </div>
             <button class="btn btn-secondary btn-sm" id="btn-clear-chat" onclick="clearChat()">Clear History</button>
@@ -122,7 +123,7 @@
         <!-- Right: Evidence & Citations Sidebar -->
         <aside class="evidence-container">
           <div class="evidence-header">
-            <h3>Verified Evidence & Graph Context</h3>
+            <h3>Verified Evidence &amp; <span class="gradient-text">Graph Context</span></h3>
             <span class="evidence-counter" id="evidence-counter">0 citations</span>
           </div>
 
@@ -154,7 +155,7 @@
       <div class="documents-panel">
         <div class="documents-header">
           <div>
-            <h2>Document Management</h2>
+            <h2>Document <span class="gradient-text">Management</span></h2>
             <p class="subtitle">Upload enterprise documents (Markdown, TXT, PDF, JSON). Files are validated, chunked, and indexed into FalkorDB.</p>
           </div>
           <button class="btn btn-secondary" id="btn-reindex" onclick="reindexSampleDataset()">
@@ -209,7 +210,7 @@
       <div class="explorer-panel">
         <div class="explorer-header">
           <div>
-            <h2>FalkorDB Knowledge Graph Explorer</h2>
+            <h2>FalkorDB Knowledge <span class="gradient-text">Graph Explorer</span></h2>
             <p class="subtitle">Inspect operational entities, ownership links, incident impacts, and document groundings.</p>
           </div>
           <div class="explorer-controls">
@@ -226,30 +227,31 @@
 
         <!-- Graph Metrics Banner -->
         <div class="metrics-grid" id="metrics-grid">
-          <div class="metric-card">
+          <div class="metric-card metric-orange">
             <span class="metric-num" id="m-services">0</span>
             <span class="metric-title">Services</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card metric-teal">
             <span class="metric-num" id="m-teams">0</span>
             <span class="metric-title">Teams</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card metric-rose">
             <span class="metric-num" id="m-incidents">0</span>
             <span class="metric-title">Incidents</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card metric-purple">
             <span class="metric-num" id="m-employees">0</span>
             <span class="metric-title">Employees</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card metric-coral">
             <span class="metric-num" id="m-documents">0</span>
             <span class="metric-title">Documents</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card metric-amber">
             <span class="metric-num" id="m-chunks">0</span>
             <span class="metric-title">Evidence Chunks</span>
           </div>
+        </div>
         </div>
 
         <!-- Entity Relationship Cards -->

@@ -1,9 +1,12 @@
 .env
 __pycache__
+.pytest_cache
 cache
 output
 .venv
 
 logs
+*.log
 falkordb-data
+data/falkordb/
 weaviate-data

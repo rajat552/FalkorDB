@@ -287,7 +287,7 @@ async function loadDocumentsList() {
       const dateStr = d.uploaded_at ? new Date(d.uploaded_at).toLocaleString() : "-";
       tr.innerHTML = `
         <td>
-          <div style="font-weight: 600; color: #fff;">${escapeHtml(d.filename)}</div>
+          <div style="font-weight: 600; color: var(--text-main);">${escapeHtml(d.filename)}</div>
           <div style="font-size: 0.75rem; color: var(--text-dim);">${escapeHtml(d.title || "")}</div>
         </td>
         <td class="text-mono">${escapeHtml(d.id)}</td>
