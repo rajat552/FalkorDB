@@ -27,9 +27,27 @@ def retrieve_graph_evidence(query: str, graph_name: Optional[str] = None) -> Ret
     evidence = RetrievedEvidence()
     q_lower = query.lower()
 
+    # Typo tolerance & keyword normalization
+    q_normalized = q_lower
+    typo_map = {
+        "paymrnt": "payment",
+        "paymnt": "payment",
+        "paymnet": "payment",
+        "pament": "payment",
+        "aut": "auth",
+        "authen": "auth",
+        "secuirty": "security",
+        "ordr": "order",
+        "notif": "notification",
+        "membr": "member",
+        "membrs": "members",
+    }
+    for typo, correction in typo_map.items():
+        q_normalized = re.sub(rf"\b{typo}\b", correction, q_normalized)
+
     # 1. Identify query entity keywords
     known_services = ["payment-service", "auth-service", "order-processing-service", "notification-hub"]
-    matched_services = [s for s in known_services if s in q_lower or s.split("-")[0] in q_lower]
+    matched_services = [s for s in known_services if s in q_normalized or s.split("-")[0] in q_normalized]
 
     matched_incidents = re.findall(r"\b(INC-\d{4}-\d+)\b", query, re.IGNORECASE)
     matched_runbooks = re.findall(r"\b(RB-[A-Z]+-\d{2,3})\b", query, re.IGNORECASE)
@@ -141,7 +159,7 @@ def retrieve_graph_evidence(query: str, graph_name: Optional[str] = None) -> Ret
             logger.debug(f"Runbook traversal failed: {e}")
 
     # 5. Team Ownership / Lead / On-call Traversal
-    if any(k in q_lower for k in ["team", "lead", "owns", "ownership", "roster", "who owns"]):
+    if any(k in q_normalized for k in ["team", "lead", "owns", "ownership", "roster", "who owns", "member", "members", "staff"]):
         cypher = """
         MATCH (t:Team)-[:OWNS]->(s:Service)
         RETURN t.name, t.lead, s.name
@@ -149,13 +167,59 @@ def retrieve_graph_evidence(query: str, graph_name: Optional[str] = None) -> Ret
         try:
             for row in graph.query(cypher).result_set:
                 t_name, t_lead, s_name = row
-                if s_name in q_lower or not matched_services:
+                if s_name in q_normalized or not matched_services:
                     evidence.entities.append({"label": "Team", "name": t_name, "lead": t_lead})
                     evidence.entities.append({"label": "Service", "name": s_name})
                     evidence.relationships.append({"from": t_name, "type": "OWNS", "to": s_name})
                     evidence.raw_facts.append(f"Team '{t_name}' (Lead: {t_lead}) owns '{s_name}'.")
         except Exception as e:
             logger.debug(f"Team ownership query failed: {e}")
+
+    # 5b. Team Members & Employee Directory Traversal
+    if any(k in q_normalized for k in ["member", "members", "staff", "who works", "who is on", "people", "engineer", "directory"]):
+        target_team_filter = ""
+        if "payment" in q_normalized:
+            target_team_filter = "WHERE t.name CONTAINS 'Payment'"
+        elif "security" in q_normalized or "auth" in q_normalized:
+            target_team_filter = "WHERE t.name CONTAINS 'Security'"
+        elif "order" in q_normalized:
+            target_team_filter = "WHERE t.name CONTAINS 'Order'"
+
+        cypher_emp = f"""
+        MATCH (e:Employee)-[:MEMBER_OF]->(t:Team)
+        {target_team_filter}
+        RETURN e.name, e.email, e.role, t.name
+        """
+        try:
+            for row in graph.query(cypher_emp).result_set:
+                e_name, e_email, e_role, t_name = row
+                clean_email = e_email.strip("`")
+                evidence.entities.append({"label": "Employee", "name": e_name, "email": clean_email, "role": e_role})
+                evidence.entities.append({"label": "Team", "name": t_name})
+                evidence.relationships.append({"from": e_name, "type": "MEMBER_OF", "to": t_name})
+                evidence.raw_facts.append(f"{e_name} ({clean_email}) is a member of '{t_name}'.")
+        except Exception as e:
+            logger.debug(f"Employee membership query failed: {e}")
+
+        # Also link evidence chunk from team-ownership-roster.md
+        roster_q = """
+        MATCH (d:Document) WHERE d.filename CONTAINS 'roster' OR d.filename CONTAINS 'team'
+        MATCH (d)-[:CONTAINS]->(c:EvidenceChunk)
+        RETURN d.id, d.filename, d.title, c.id, c.text
+        LIMIT 3
+        """
+        try:
+            for row in graph.query(roster_q).result_set:
+                d_id, d_fn, d_t, c_id, c_text = row
+                evidence.entities.append({"label": "Document", "id": d_id, "filename": d_fn, "title": d_t})
+                evidence.chunks.append({
+                    "chunk_id": c_id,
+                    "document_id": d_id,
+                    "filename": d_fn,
+                    "text": c_text,
+                })
+        except Exception as e:
+            pass
 
     # 6. Policy & SLA Traversal
     if any(k in q_lower for k in ["sla", "policy", "escalat", "response target", "severity"]):

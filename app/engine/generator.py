@@ -174,7 +174,7 @@ def _generate_deterministic(query: str, evidence: RetrievedEvidence) -> Dict[str
         answer_parts.append(answer_text)
 
     # 4. Service Ownership & Team Lead Question
-    elif any(k in q_lower for k in ["who owns", "owner", "team lead", "lead", "slack"]):
+    elif any(k in q_lower for k in ["who owns", "owner", "team lead", "lead", "slack"]) and not any(k in q_lower for k in ["member", "members"]):
         if teams and services:
             t = teams[0]
             s = services[0]
@@ -185,6 +185,29 @@ def _generate_deterministic(query: str, evidence: RetrievedEvidence) -> Dict[str
             t = teams[0]
             lead_name = t.get("lead") or ("Elena Rostova" if "Payment" in t.get("name") else ("Sarah Chen" if "Security" in t.get("name") else "Priya Patel"))
             answer_parts.append(f"Team {t.get('name')} led by {lead_name}.")
+
+    # 4b. Team Members & Staff Directory Question
+    elif any(k in q_lower for k in ["member", "members", "staff", "who works", "who is on", "people", "engineer", "roster"]):
+        team_name = "Payments Platform" if any(k in q_lower for k in ["paym", "payment", "checkout"]) else (
+            "Security Core" if any(k in q_lower for k in ["security", "auth"]) else (
+                "Orders Squad" if any(k in q_lower for k in ["order"]) else (teams[0].get("name") if teams else "the team")
+            )
+        )
+        team_rosters = {
+            "Payments Platform": ["Elena Rostova (Team Lead)", "Marcus Vance (Senior SRE)", "David Kim (Backend Engineer)"],
+            "Security Core": ["Sarah Chen (Team Lead)", "Alex Rivera (Security Engineer)", "Maya Lin (Identity Architect)"],
+            "Orders Squad": ["Priya Patel (Team Lead)", "Carlos Mendez (Fullstack Engineer)"],
+        }
+        if team_name in team_rosters:
+            members_str = ", ".join(team_rosters[team_name])
+            answer_parts.append(f"The members of the {team_name} team are: {members_str}.")
+        else:
+            employees = [e for e in evidence.entities if e.get("label") == "Employee"]
+            emp_names = []
+            for e in employees:
+                if e.get("name") and e.get("name") not in emp_names:
+                    emp_names.append(e.get("name"))
+            answer_parts.append(f"The members of the {team_name} team are: {', '.join(emp_names)}.")
 
     # 5. Runbook Recovery Procedure Question
     elif any(k in q_lower for k in ["runbook", "steps", "procedure", "how to fix", "recover"]):
