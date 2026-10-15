@@ -132,4 +132,10 @@ def get_enterprise_ontology() -> Ontology:
         Relation(label="GROUNDED_IN", source="Incident", target="EvidenceChunk", attributes=[])
     )
 
+    # (Service)-[:DEPENDS_ON]->(Service)
+    ont.add_relation(
+        Relation(label="DEPENDS_ON", source="Service", target="Service", attributes=[])
+    )
+
     return ont
+
