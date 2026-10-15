@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261015_v6">
+  <link rel="stylesheet" href="style.css?v=20261015_v7">
 </head>
 <body>
   <!-- Ambient Warm Glow Background Elements -->
@@ -92,13 +92,8 @@
           </div>
 
           <!-- Suggested Questions Pills -->
-          <div class="suggested-queries" id="suggested-queries-block">
-            <div class="suggested-header">
-              <span class="suggested-label">SUGGESTED QUERIES</span>
-              <button type="button" class="btn-toggle-suggestions" id="btn-toggle-suggestions" onclick="toggleSuggestedQueries()" title="Toggle suggested queries bar" aria-expanded="true">
-                Hide ▴
-              </button>
-            </div>
+          <div class="suggested-queries">
+            <span class="suggested-label">SUGGESTED QUERIES:</span>
             <div class="query-pills" id="query-pills-container">
               <button class="query-pill" onclick="runSuggestedQuery(this)">Which team resolved the latest payment-service incident, what caused it, and which runbook documents the fix?</button>
               <button class="query-pill" onclick="runSuggestedQuery(this)">Who owns the auth-service and who is the team lead?</button>
@@ -433,6 +428,6 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="app.js?v=20261015_v6"></script>
+  <script src="app.js?v=20261015_v7"></script>
 </body>
 </html>

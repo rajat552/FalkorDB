@@ -468,20 +468,12 @@ body {
 
 /* Suggested Queries */
 .suggested-queries {
-  padding: 10px 24px;
+  padding: 14px 26px;
   background: #FFFDFB;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-  transition: all 0.25s ease;
-}
-
-.suggested-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 10px;
 }
 
 .suggested-label {
@@ -492,53 +484,10 @@ body {
   color: var(--brand-orange-dark);
 }
 
-.btn-toggle-suggestions {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: var(--radius-xs);
-  transition: color 0.18s ease;
-  font-family: var(--font-sans);
-}
-
-.btn-toggle-suggestions:hover {
-  color: var(--brand-orange);
-}
-
 .query-pills {
   display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
   gap: 8px;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--brand-orange-border) transparent;
-  -webkit-overflow-scrolling: touch;
-}
-
-.query-pills::-webkit-scrollbar {
-  height: 4px;
-}
-
-.query-pills::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.query-pills::-webkit-scrollbar-thumb {
-  background: var(--brand-orange-border);
-  border-radius: 999px;
-}
-
-.suggested-queries.collapsed .query-pills {
-  display: none;
-}
-
-.suggested-queries.collapsed {
-  padding: 6px 24px;
 }
 
 .query-pill {
@@ -554,8 +503,6 @@ body {
   text-align: left;
   font-family: var(--font-sans);
   line-height: 1.35;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .query-pill:hover {
