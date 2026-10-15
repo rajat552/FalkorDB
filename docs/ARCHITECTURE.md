@@ -71,6 +71,7 @@ To support multi-document reasoning for internal IT inquiries, the schema repres
 | :--- | :--- | :--- | :--- | :--- |
 | `MEMBER_OF` | `Employee` | `Team` | `role` | Staff membership in teams |
 | `OWNS` | `Team` | `Service` | `ownership_type` | Team responsible for a service |
+| `DEPENDS_ON` | `Service` | `Service` | `dependency_type` | Upstream/downstream microservice architectural dependencies |
 | `AFFECTED_BY` | `Service` | `Incident` | `impact_level` | Service outage or degradation |
 | `RESOLVED_BY` | `Incident` | `Team` | `resolved_at` | Team that mitigated the incident |
 | `DOCUMENTED_IN` | `Incident` | `Document` | `section` | Incident postmortem or runbook link |
