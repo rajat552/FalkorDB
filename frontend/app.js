@@ -127,10 +127,41 @@ function showToast(message, type = "info") {
 }
 
 // --- Chat & Workspace Logic ---
+function toggleSuggestedQueries(forceCollapse) {
+  const block = document.getElementById("suggested-queries-block");
+  const btn = document.getElementById("btn-toggle-suggestions");
+  if (!block || !btn) return;
+
+  const isCollapsed = block.classList.contains("collapsed");
+  const shouldCollapse = forceCollapse !== undefined ? forceCollapse : !isCollapsed;
+
+  if (shouldCollapse) {
+    block.classList.add("collapsed");
+    btn.textContent = "Show Suggestions ▾";
+    btn.setAttribute("aria-expanded", "false");
+  } else {
+    block.classList.remove("collapsed");
+    btn.textContent = "Hide ▴";
+    btn.setAttribute("aria-expanded", "true");
+  }
+}
+
+function scrollChatToBottom() {
+  const container = document.getElementById("chat-messages");
+  if (!container) return;
+  requestAnimationFrame(() => {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth"
+    });
+  });
+}
+
 function runSuggestedQuery(btn) {
   const query = btn.textContent.trim();
   const input = document.getElementById("chat-input");
   input.value = query;
+  toggleSuggestedQueries(true);
   handleChatSubmit(new Event("submit"));
 }
 
@@ -150,6 +181,7 @@ function clearChat() {
   document.getElementById("active-graph-context").style.display = "none";
   document.getElementById("empty-evidence-state").style.display = "flex";
   document.getElementById("evidence-counter").textContent = "0 citations";
+  toggleSuggestedQueries(false);
   showToast("Chat history cleared.", "info");
 }
 
@@ -162,6 +194,9 @@ async function handleChatSubmit(event) {
   isQuerying = true;
   const sendBtn = document.getElementById("btn-send");
   sendBtn.disabled = true;
+
+  // Auto collapse suggestions to maximize message display room
+  toggleSuggestedQueries(true);
 
   // Append user message
   appendUserMessage(query);
@@ -193,6 +228,7 @@ async function handleChatSubmit(event) {
     isQuerying = false;
     sendBtn.disabled = false;
     input.focus();
+    scrollChatToBottom();
   }
 }
 
@@ -207,7 +243,7 @@ function appendUserMessage(text) {
     </div>
   `;
   container.appendChild(msgEl);
-  container.scrollTop = container.scrollHeight;
+  scrollChatToBottom();
 }
 
 function appendLoadingMessage() {
@@ -225,7 +261,7 @@ function appendLoadingMessage() {
     </div>
   `;
   container.appendChild(msgEl);
-  container.scrollTop = container.scrollHeight;
+  scrollChatToBottom();
   return id;
 }
 
@@ -242,7 +278,7 @@ function appendBotResponse(data) {
   const isAbstain = data.insufficient_evidence;
   const badgeHtml = isAbstain
     ? `<span class="badge-abstain">Honest Abstention (Insufficient Evidence)</span>`
-    : `<span class="badge-grounded">Grounded in ${data.citations ? data.citations.length : 0} Verified Sources</span>`;
+    : `<span class="badge-grounded">✓ Grounded in ${data.citations ? data.citations.length : 0} Verified Sources</span>`;
 
   msgEl.innerHTML = `
     <div class="message-avatar" aria-hidden="true">CB</div>
@@ -252,7 +288,7 @@ function appendBotResponse(data) {
     </div>
   `;
   container.appendChild(msgEl);
-  container.scrollTop = container.scrollHeight;
+  scrollChatToBottom();
 }
 
 function appendErrorMessage(errorText) {
@@ -266,7 +302,7 @@ function appendErrorMessage(errorText) {
     </div>
   `;
   container.appendChild(msgEl);
-  container.scrollTop = container.scrollHeight;
+  scrollChatToBottom();
 }
 
 // --- Evidence & Citations Panel Rendering ---
