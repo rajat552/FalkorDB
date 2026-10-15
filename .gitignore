@@ -67,3 +67,19 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Internal Planning Documents & Demo Video Scripts
+IMPLEMENTATION_PLAN*.md
+PROJECT_DEMO_VIDEO_SCRIPT*.md
+*demo*script*.md
+*.plan.md
+
+# Video and Media Files
+*.mp4
+*.mov
+*.avi
+*.wmv
+*.webm
+*.mkv
+*.m4v
+*.clipchamp
