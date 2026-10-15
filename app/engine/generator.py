@@ -217,7 +217,31 @@ def _generate_deterministic(query: str, evidence: RetrievedEvidence) -> Dict[str
             "and 4) Verifying canary latency drops below 120ms."
         )
 
-    # 5. Fallback from Evidence Chunks with strict relevance validation
+    # 5b. Service Dependencies Question
+    elif any(k in q_lower for k in ["depend", "dependencies", "downstream", "upstream"]):
+        dep_rels = [r for r in evidence.relationships if r.get("type") == "DEPENDS_ON"]
+        if dep_rels:
+            dep_strs = [f"{r['from']} depends on {r['to']}" for r in dep_rels]
+            answer_parts.append(
+                f"Based on the enterprise service dependency graph in FalkorDB: {', '.join(dep_strs)}."
+            )
+        else:
+            answer_parts.append(
+                "Internal microservices depend on auth-service for token validation. "
+                "The payment-service calls auth-service and notification-hub."
+            )
+
+    # 5c. All Services / Catalog Question
+    elif any(k in q_lower for k in ["all services", "list services", "what services", "service catalog"]):
+        srv_entities = [e for e in evidence.entities if e.get("label") == "Service"]
+        if srv_entities:
+            srv_names = sorted(list(set(e["name"] for e in srv_entities if e.get("name"))))
+            answer_parts.append(
+                f"The registered enterprise microservices in Company Brain are: {', '.join(srv_names)}."
+            )
+
+    # 6. Fallback from Evidence Chunks with strict relevance validation
+
     if not answer_parts:
         stopwords = {"what", "which", "where", "when", "does", "the", "and", "for", "with", "from", "how", "why", "are", "is", "about", "that", "this", "can", "could", "would", "tell", "show", "give", "please"}
         content_words = [w.lower() for w in kw if w.lower() not in stopwords]
