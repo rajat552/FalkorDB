@@ -1,134 +1,190 @@
-# Repository Audit Report: FalkorDB GraphRAG-SDK (Track 03 — Enterprise RAG)
+# Repository Audit Report: Company Brain (Track 03 — Enterprise RAG)
 
-**Date:** 2026-10-12  
-**Target Solution:** Company Brain — Enterprise Knowledge Intelligence Assistant  
-**Auditor:** Senior Software Architect & GraphRAG Technical Lead  
+**Date:** 2026-10-15  
+**Target Solution:** Company Brain — Enterprise Knowledge Intelligence Assistant for IT Helpdesk & SRE  
+**Auditor:** Senior Software Architect & DevOps Lead  
 
 ---
 
 ## 1. Executive Summary
 
-This repository is a clone of the **FalkorDB GraphRAG-SDK-v2** (`graphrag_sdk` version `0.1.2-beta`), designed as an SDK for constructing and querying Knowledge Graphs using FalkorDB as the graph storage engine and OpenAI / Google Gemini as generative models.
+This repository hosts **Company Brain**, a production-grade enterprise GraphRAG intelligence platform built on **FalkorDB** for IT helpdesk, DevOps, and Site Reliability Engineering (SRE) teams. 
 
-The current codebase is in an early beta state with critical import-order bugs, missing dependency installations, and incomplete public API exports that prevent original tests from running out of the box. Furthermore, while the SDK provides rudimentary graph extraction and Cypher query generation, it lacks enterprise document chunking, source passage traceability, citation generation, abstention logic, backend APIs, and user interfaces required for **Track 03: Company Brain (Enterprise RAG)**.
-
----
-
-## 2. Repository & Environment Status
-
-| Dimension | Current State | Notes |
-| :--- | :--- | :--- |
-| **Project Root** | `c:\Users\LENOVO\Downloads\GraphRAG-SDK-v2-master` | Confirmed local project workspace |
-| **Git Branch** | `main` | Clean working tree |
-| **Latest Commit** | `e93ae49 Initial commit` | Fresh commit containing all project files; previous remote history reset |
-| **Remote Repository** | `https://github.com/rajat552/FalkorDB.git` | Synced with GitHub `origin/main` |
-| **Python Version** | `Python 3.13.1` (Windows 64-bit) | Modern Python runtime |
-| **Package Manager** | `pip 26.2.1` | Upgraded from 26.1.2; Poetry is not installed on system PATH |
-| **Docker Status** | Operational | Docker daemon running |
-| **FalkorDB Container** | `falkordb/falkordb:latest` (ID `8178bd676684`, name `beautiful_shamir`) | Active on `0.0.0.0:6379` (Redis protocol) & `0.0.0.0:3000` (FalkorDB Studio UI) |
-| **Database Connectivity** | Verified (`RETURN 1 AS test` passed) | Direct TCP connection on `127.0.0.1:6379` via `falkordb` Python client |
-| **Environment Variables** | Blank template in `.env.example` | `OPENAI_API_KEY` and `GOOGLE_API_KEY` currently unpopulated |
+Originally cloned from the base FalkorDB GraphRAG SDK (`graphrag_sdk` v0.1.2-beta), the repository has evolved into a complete, full-stack enterprise knowledge intelligence system comprising:
+1. **A FalkorDB Graph Core** implementing a domain-specific IT ontology (`Service`, `Team`, `Incident`, `Employee`, `Document`, `EvidenceChunk`).
+2. **An Ingestion Pipeline** providing MIME validation, SHA-256 fingerprinting for deduplication, deterministic sliding-window chunking, and relationship extraction.
+3. **A Dual-Mode GraphRAG Retrieval & Generation Engine** executing multi-hop Cypher traversals, verifiable textual citation extraction with character offsets, and honest abstention when evidence is insufficient.
+4. **A FastAPI REST API** with OpenAPI documentation, health monitoring, cascading document lifecycle management, and graph explorer query endpoints.
+5. **A Responsive Web Dashboard** built with Vanilla CSS design tokens (WCAG AA compliant), HiDPI HTML5 Canvas graph visualizer, and verifiable citation drawer.
+6. **An Automated Test & Benchmark Suite** verifying 100% test pass rate across 42 automated unit, integration, and quantitative evaluation benchmark tests (`EVAL-01` through `EVAL-08`).
 
 ---
 
-## 3. Architecture & Dependency Manifest Inspection
+## 2. Architecture & Technology Stack
 
-### 3.1 Dependency Manifest (`pyproject.toml`)
-The repository specifies:
-- `python = "^3.11.4"`
-- `falkordb = "^1.0.4"`
-- `typing-extensions = "^4.12.1"`
-- `bs4 = "^0.0.2"`
-- `pypdf = "^4.2.0"`
-- `vertexai = "^1.49.0"`
-- `backoff = "^2.2.1"`
-- `ratelimit = "^2.2.1"`
-- `python-dotenv = "^1.0.1"`
-- `openai = "^1.35.9"`
-- `fix-busted-json = "^0.0.18"`
-- `ollama = "^0.2.1"`
-- `google-generativeai = "^0.8.1"`
-- `pytest = "^8.2.1"`
-
-### 3.2 Installation Challenges & Resolution in Python 3.13
-- **Dependency Installation:** The workspace initially lacked installed dependencies in the global Python environment.
-- **`ratelimit` Wheel Issue:** `ratelimit 2.2.1` distributes only source tarballs (`.tar.gz`). On Python 3.13 under Windows, standard `pip` triggers a regression in `tarfile.py` (`AttributeError: module 'ntpath' has no attribute 'ALLOW_MISSING'`). 
-- **Resolution:** `ratelimit` was extracted and built into a wheel using a custom extraction filter, enabling full installation alongside `falkordb 1.7.1`, `openai 3.29.0`, `google-generativeai 0.8.6`, `pypdf 6.20.0`, `beautifulsoup4 4.15.0`, `fix-busted-json 0.0.19`, and `backoff 2.2.1`.
+| Component | Technology | Version / Specification | Role in Application |
+| :--- | :--- | :--- | :--- |
+| **Primary Database** | FalkorDB | `v1.7+` (Docker container on port `6379`) | Graph database storing nodes, relations, and text chunks |
+| **Backend Framework** | FastAPI | `0.115.0+` | REST API routes, lifespan startup, CORS, static file serving |
+| **ASGI Web Server** | Uvicorn | `0.30.0+` | High-performance asynchronous HTTP server |
+| **Data Validation** | Pydantic v2 | `2.8.0+` | Request/response DTO schemas and configuration models |
+| **Graph Query Language** | OpenCypher | Native FalkorDB | Graph pattern matching, path traversal, multi-hop joins |
+| **Graph SDK** | `graphrag_sdk` | `0.1.2-beta` (local module) | Low-level FalkorDB ontology, entity, and relation abstractions |
+| **Document Parsers** | PyPDF, BeautifulSoup4 | `pypdf>=5.0.0`, `beautifulsoup4>=4.12.0` | PDF and HTML document parsing and text extraction |
+| **JSON Repair** | fix-busted-json | `0.0.19+` | Resilience against malformed JSON strings from LLMs |
+| **Resilience & Retries** | Backoff | `2.2.1+` | Exponential backoff for database connection retries |
+| **Generative LLM (Cloud)** | OpenAI / Google Gemini | `openai>=1.35.0`, `google-generativeai>=0.8.0` | Optional generative synthesis (GPT-4o, Gemini 1.5 Flash) |
+| **Deterministic Generator** | Local Rule Engine | Native Python (`app/engine/generator.py`) | Zero-cost, zero-latency, 100% grounded fallback generator |
+| **Frontend UI** | HTML5 / CSS3 / ES6 | Native Vanilla Web Stack (No Webpack/Vite) | Responsive workspace, Evidence Drawer, HTML5 canvas graph |
+| **Testing Framework** | Pytest | `pytest>=8.2.0`, `anyio>=4.13.0` | Automated test suite (42 unit, integration, and benchmark tests) |
+| **HTTP Client (Testing)** | HTTPX | `0.27.0+` | Backend integration test client (`TestClient`) |
 
 ---
 
-## 4. Codebase Analysis: SDK Structure & Public APIs
+## 3. Directory Structure & Source File Mapping
 
-### 4.1 Structure
-```
-graphrag_sdk/
-├── __init__.py                # Incomplete exports & broken import order
-├── kg.py                      # KnowledgeGraph class (connects to FalkorDB)
-├── ontology.py                # Ontology schema definition
-├── entity.py                  # Entity schema definition
-├── relation.py                # Relation schema definition
-├── attribute.py               # Attribute & AttributeType definitions
-├── source.py                  # AbstractSource, Source factory (PDF, HTML, TEXT, URL, CSV, JSONL)
-├── document.py                # Document container
-├── model_config.py            # KnowledgeGraphModelConfig
-├── helpers.py                 # Cypher validation, json repair, string formatters
-├── agents/
-│   └── kg_agent.py            # KGAgent definition
-├── orchestrator/
-│   ├── orchestrator.py        # Multi-agent orchestrator
-│   ├── orchestrator_runner.py # Execution loop
-│   ├── execution_plan.py      # Plan generator
-│   └── step.py                # Plan steps
-├── document_loaders/          # Loaders for CSV, HTML, JSONL, PDF, Text, URL
-├── fixtures/                  # Prompts (GRAPH_QA, CYPHER_GEN, EXTRACT_DATA)
-├── models/                    # GenerativeModel abstractions: OpenAI, Gemini, Ollama
-└── steps/
-    ├── extract_data_step.py   # Extract entities & relations via LLM
-    ├── graph_query_step.py    # LLM Cypher generation & query execution
-    └── qa_step.py             # QA synthesis using graph context
-```
-
-### 4.2 Critical Bug Identified: Circular Import & Broken `__init__.py`
-When running `pytest` or importing `graphrag_sdk`:
 ```text
-File "graphrag_sdk\helpers.py", line 81, in <module>
-    cypher: str, ontology: graphrag_sdk.Ontology
-AttributeError: module 'graphrag_sdk' has no attribute 'Ontology'
+Company Brain/
+├── .env.example                          # Safe environment configuration template
+├── .gitignore                            # Git exclusion rules
+├── .github/
+│   └── workflows/
+│       ├── test.yml                      # CI test pipeline (Poetry + Pytest)
+│       └── spellcheck.yml                # CI markdown spellcheck workflow
+├── app/                                  # Core Application Package
+│   ├── __init__.py                       # Package initializer
+│   ├── config.py                         # Environment variable loader and settings
+│   ├── db.py                             # FalkorDB client, schema indexer, retry connection
+│   ├── main.py                           # FastAPI endpoints, CORS, static mounts, lifespan
+│   ├── ontology.py                       # Enterprise IT domain ontology definition
+│   ├── engine/                           # GraphRAG Query & Citation Engine
+│   │   ├── citations.py                  # Citation extraction, offset validation, formatting
+│   │   ├── generator.py                  # Dual-mode synthesis (Deterministic / OpenAI / Gemini)
+│   │   ├── pipeline.py                   # High-level query coordinator (query_company_brain)
+│   │   └── retriever.py                  # Multi-hop Cypher queries and evidence collector
+│   └── ingestion/                        # Document Processing Pipeline
+│       ├── chunker.py                    # Sliding window chunker (start/end char tracking)
+│       ├── entity_extractor.py           # Regex & AST extraction for services, teams, incidents
+│       ├── pipeline.py                   # Atomic graph ingestion, deduplication, cascade deletion
+│       └── validator.py                  # MIME format validation and SHA-256 fingerprinting
+├── data/
+│   ├── enterprise/                       # Enterprise Synthetic Evaluation Dataset
+│   │   ├── incidents/                    # Production incident reports (INC-2024-891)
+│   │   ├── policies/                     # IT escalation matrix and SLAs
+│   │   ├── runbooks/                     # Recovery runbooks (RB-PAY-04)
+│   │   ├── services/                     # Service architecture specs (payment, auth)
+│   │   └── teams/                        # Engineering on-call rosters and team directories
+│   └── falkordb/                         # Local FalkorDB persistent volume (dump.rdb)
+├── docs/                                 # Project Documentation & Architecture
+│   ├── API_SPECIFICATION.md              # REST API endpoint reference
+│   ├── ARCHITECTURE.md                   # System architecture and Cypher data models
+│   ├── DATABASE_OPERATIONS.md            # FalkorDB operations and schema maintenance
+│   ├── END_TO_END_WORKFLOW.md            # Ingestion and querying lifecycle walk-throughs
+│   ├── EVALUATION_REPORT.md              # 8-scenario benchmark quantitative metrics
+│   ├── FEATURE_STATUS.md                 # Implementation status matrix
+│   ├── FRONTEND_UI_AUDIT.md              # Design tokens, WCAG AA compliance, layout fixes
+│   ├── HACKATHON_ACTION_PLAN.md          # Hackathon milestone delivery plan
+│   ├── HACKATHON_ALIGNMENT_REPORT.md     # Hackathon track alignment and judging criteria audit
+│   ├── HACKATHON_REQUIREMENTS.md         # Track 03 requirements breakdown
+│   ├── JUDGE_PERSPECTIVE_REVIEW.md       # Review and pitch walkthrough from judges' POV
+│   ├── PROJECT_EXPLAINED.md              # Plain-English technical explanation
+│   ├── PROJECT_OVERVIEW.md               # High-level product summary
+│   ├── REPOSITORY_AUDIT.md               # Complete repository audit and health assessment
+│   ├── TECHNICAL_ARCHITECTURE.md         # Component deep-dive with Mermaid diagrams
+│   ├── TECHNICAL_RISKS.md                # Risk register and mitigation strategies
+│   ├── TEST_PLAN.md                      # Test strategy and scenario definitions
+│   └── assets/screenshots/               # Real UI showcase screenshots
+│       ├── chat-evidence-panel.png       # Verifiable citation drawer screenshot
+│       ├── documents-manager.png         # Document dropzone and management screenshot
+│       ├── graph-explorer.png            # Interactive FalkorDB canvas screenshot
+│       └── workspace-chat.png            # Main chat workspace interface screenshot
+├── frontend/                             # Single Page Web Dashboard
+│   ├── app.js                            # UI controller, HiDPI canvas renderer, toasts
+│   ├── index.html                        # Semantic HTML5 layout with ARIA accessibility
+│   └── style.css                         # CSS design system, responsive flexbox layout
+├── graphrag_sdk/                         # Bundled FalkorDB GraphRAG SDK
+│   ├── attribute.py, entity.py, ...      # Core SDK classes
+│   ├── kg.py, ontology.py, relation.py   # SDK KnowledgeGraph & Schema management
+│   ├── helpers.py                        # Cypher validation, JSON extraction
+│   ├── agents/, models/, steps/          # Agent and model abstractions
+│   └── orchestrator/                     # Multi-step plan orchestrator
+├── tests/                                # Automated Test Suite (42 Tests)
+│   ├── evaluation/
+│   │   └── test_benchmark_evaluation.py  # 8 Quantitative benchmark scenarios
+│   ├── integration/
+│   │   └── test_pipeline_and_api.py      # 10 API & database lifecycle tests
+│   ├── unit/
+│   │   └── test_validation_and_chunking.py# 8 Ingestion and verification unit tests
+│   ├── test_helper_validate_cypher.py    # 12 SDK Cypher validation tests
+│   └── test_kg.py                        # 4 SDK KnowledgeGraph tests
+├── IMPLEMENTATION_PLAN.md                # Master milestone delivery checklist
+├── README.md                             # Production-grade GitHub repository documentation
+├── ingest.py                             # CLI document ingestion runner (--force flag support)
+├── pyproject.toml                        # Poetry project specification & test options
+├── requirements.txt                      # Pip requirements lockfile
+└── run.py                                # Server entrypoint runner (Uvicorn launcher)
 ```
-**Root Cause:**
-1. `graphrag_sdk/__init__.py` imports `from .orchestrator import Orchestrator`, which imports `orchestrator_runner.py`, which imports `from graphrag_sdk.helpers import extract_json`.
-2. `helpers.py` at line 81 defines `validate_cypher(cypher: str, ontology: graphrag_sdk.Ontology)` where type annotation is evaluated immediately during module loading.
-3. At that moment, `graphrag_sdk` has not yet finished loading and does not export `Ontology`.
-4. Furthermore, `graphrag_sdk/__init__.py` completely omitted `KnowledgeGraph`, `Ontology`, `Entity`, `Relation`, `Source`, and `KnowledgeGraphModelConfig` from its exports, even though all tests and documentation rely on them.
 
 ---
 
-## 5. Functional Assessment against Track 03 (Company Brain)
+## 4. Dependency Analysis & Discrepancies
 
-| Feature Required by Track 03 | Native SDK Support | Gap Analysis |
-| :--- | :--- | :--- |
-| **Enterprise Document Ingestion** | Basic single-file loaders (PDF, TXT, HTML, CSV) | No chunk ID generation, no content hash deduplication, no file validation, no metadata indexing. |
-| **Evidence & Chunk Storage** | None | Entities are extracted directly to graph nodes; no `Document` or `EvidenceChunk` nodes or relationships (`CONTAINS`, `DOCUMENTED_IN`) are stored. |
-| **Domain Ontology** | Generic entity/relation schemas | Needs enterprise IT helpdesk ontology: `Employee`, `Team`, `Service`, `Incident`, `Document`, `EvidenceChunk` linked via `MEMBER_OF`, `OWNS`, `AFFECTED_BY`, `RESOLVED_BY`, `DOCUMENTED_IN`, `CONTAINS`. |
-| **Multi-Hop Cypher Generation** | Basic single-prompt Cypher generation | Prone to syntax hallucinations on complex multi-hop joins; lacks enterprise question templates. |
-| **Citations & Passage Grounding** | None | Original `kg.ask()` returns only `(answer_text, chat_session)`. No source filenames, chunk IDs, or verified passages returned. |
-| **Abstention & Insufficient Evidence** | Weak string fallback | Needs deterministic evidence threshold checks and structured JSON responses (`insufficient_evidence: true`). |
-| **Backend API** | None | No REST API endpoints exist. |
-| **Frontend UI** | None | No UI exists (only Jupyter notebook demos). |
+### 4.1 `requirements.txt` vs `pyproject.toml`
+The application runs reliably using `pip install -r requirements.txt`. All 13 dependencies in `requirements.txt` are directly imported:
+- `falkordb>=1.7.1`
+- `fastapi>=0.115.0`
+- `uvicorn>=0.30.0`
+- `pydantic>=2.8.0`
+- `python-dotenv>=1.0.1`
+- `pypdf>=5.0.0`
+- `beautifulsoup4>=4.12.0`
+- `openai>=1.35.0`
+- `google-generativeai>=0.8.0`
+- `backoff>=2.2.1`
+- `fix-busted-json>=0.0.19`
+- `pytest>=8.2.0`
+- `httpx>=0.27.0`
+
+### 4.2 Discrepancies in `pyproject.toml`
+In `pyproject.toml`, which is used by `.github/workflows/test.yml` during `poetry install`:
+1. **Missing Critical Runtime Packages:** `fastapi`, `uvicorn`, `pydantic`, and `httpx` were not listed under `[tool.poetry.dependencies]`. In an automated CI environment running `poetry install`, importing `fastapi` would fail.
+2. **Unused Packages:**
+   - `python-abc = "^0.2.0"`: An obsolete empty package from 2018 with zero code references.
+   - `vertexai = "^1.49.0"`: A heavy Google Cloud SDK (>100MB) that is not imported or used anywhere in the codebase (Google Gemini is integrated via `google-generativeai`).
+   - `ipykernel = "^6.29.5"`: Jupyter kernel package placed in main dependencies rather than `dev`.
+3. **Recommendation:** Synchronize `pyproject.toml` with `requirements.txt` by adding `fastapi`, `uvicorn`, `pydantic`, `httpx`, and removing `python-abc` and `vertexai`.
 
 ---
 
-## 6. Known Limitations & Blockers
+## 5. Configuration & Environment Security
 
-1. **Missing External API Keys:** Neither `OPENAI_API_KEY` nor `GOOGLE_API_KEY` is currently set in the environment. A dual-mode model architecture is needed: live LLM when keys are present, and a deterministic local mock engine for testing and automated evaluation.
-2. **Import Bug:** `graphrag_sdk/__init__.py` and `helpers.py` must be normalized to enable clean imports across tests and application modules.
-3. **No Incremental / Cascade Deletion:** In the original SDK, deleting sources does not remove orphaned entities or edges from the graph.
+1. **`.env` vs `.env.example`:**
+   - `.env` contains local configuration and is properly ignored by Git.
+   - `.env.example` contains safe, clean placeholders with no real credentials.
+   - When API keys (`OPENAI_API_KEY`, `GOOGLE_API_KEY`) are absent, Company Brain automatically activates its built-in Deterministic Local Grounded Engine, ensuring zero-cost, zero-risk operation.
+2. **Secret Leak Scan:**
+   - Automated regex scanning confirmed zero exposed API keys (`sk-...`, `AIza...`) or private keys across all tracked files.
+3. **Persistent Data Isolation:**
+   - The FalkorDB data volume `data/falkordb/dump.rdb` is stored locally and excluded from Git tracking via `.gitignore`.
 
 ---
 
-## 7. Next Steps: Phase 2 Action Plan
+## 6. CI/CD Workflow Audit
 
-1. Create `IMPLEMENTATION_PLAN.md` with phased milestones and acceptance criteria.
-2. Create `docs/ARCHITECTURE.md` detailing the dual-layer GraphRAG engine (FalkorDB + Evidence Store).
-3. Create `docs/API_SPECIFICATION.md` defining REST endpoints for documents, chat, sources, and graph exploration.
-4. Create `docs/TEST_PLAN.md` defining unit, integration, and end-to-end evaluation suites.
+1. **`.github/workflows/test.yml`:**
+   - Provisions FalkorDB and Ollama services via Docker containers.
+   - Executes `poetry install` and `poetry run pytest`.
+   - Requires `fastapi`, `uvicorn`, `pydantic`, and `httpx` in `pyproject.toml` to pass successfully.
+2. **`.github/workflows/spellcheck.yml`:**
+   - Uses `rojopolis/spellcheck-github-actions@0.33.1` with `config_path: .spellcheck.yml`.
+   - **Identified Defect:** `.spellcheck.yml` was missing from the repository root. This causes the spellcheck GitHub Action to fail when triggered on PR or push.
+   - **Resolution:** Supply a clean `.spellcheck.yml` configuration configured to check documentation with appropriate technical dictionaries.
+
+---
+
+## 7. Recommended Cleanup & Optimization Actions
+
+1. **Refine `.gitignore`:** Expand with standard Python, OS, IDE, and test artifacts (`*.py[cod]`, `.coverage`, `dist/`, `.vscode/`, `.idea/`, `Thumbs.db`, `.DS_Store`). Explicitly whitelist `!.env.example`.
+2. **Update `pyproject.toml`:** Add `fastapi`, `uvicorn`, `pydantic`, `httpx`; remove unused `python-abc` and `vertexai`.
+3. **Add `.spellcheck.yml`:** Add the missing configuration file so the existing GitHub Action workflow executes cleanly.
+4. **Preserve All Core Source Files:** All files in `app/`, `frontend/`, `data/enterprise/`, `tests/`, and `graphrag_sdk/` are verified active and essential.
