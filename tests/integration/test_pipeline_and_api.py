@@ -97,3 +97,38 @@ def test_graph_overview_endpoint(client):
     assert data["total_edges"] > 0
     assert "Service" in data["node_counts"]
     assert "Incident" in data["node_counts"]
+
+
+def test_graph_entities_endpoint(client):
+    res = client.get("/api/graph/entities")
+    assert res.status_code == 200
+    data = res.json()
+    assert "services" in data
+    assert "teams" in data
+    assert "incidents" in data
+    assert "employees" in data
+    assert "documents" in data
+    assert len(data["services"]) >= 1
+    assert any(s["name"] == "payment-service" for s in data["services"])
+    assert any(t["name"] == "Payments Platform" for t in data["teams"])
+
+
+def test_chat_dependencies_query(client):
+    payload = {"query": "What internal services depend on auth-service?"}
+    res = client.post("/api/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["insufficient_evidence"] is False
+    assert len(data["citations"]) >= 1
+    assert "auth-service" in data["answer"].lower()
+
+
+def test_chat_team_members_query(client):
+    payload = {"query": "Who are the members of the Payments Platform team?"}
+    res = client.post("/api/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["insufficient_evidence"] is False
+    assert "Elena Rostova" in data["answer"]
+    assert "Marcus Vance" in data["answer"]
+
