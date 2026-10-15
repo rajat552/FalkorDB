@@ -129,6 +129,24 @@ Safely removes a document, its associated chunks, and isolates orphaned referenc
 
 ---
 
+### `POST /api/documents/reindex`
+Re-indexes all enterprise documentation from disk. Supports an optional `force` query parameter to cleanly wipe and rebuild ontology entities and relationships.
+
+#### Query Parameters
+- `force` (boolean, optional, default: `false`): If `true`, purges existing entities and rebuilds the knowledge graph from scratch.
+
+#### Response `200 OK`
+```json
+{
+  "status": "reindexed",
+  "files_ingested": 5,
+  "files_skipped": 0,
+  "total_files": 5
+}
+```
+
+---
+
 ## 3. Query & Enterprise RAG
 
 ### `POST /api/chat`
@@ -218,6 +236,22 @@ Returns summary metrics and top entities in the knowledge graph.
     "DOCUMENTED_IN": 3,
     "CONTAINS": 18
   }
+}
+```
+
+---
+
+### `GET /api/graph/entities`
+Returns distinct active entities categorized by label (`services`, `teams`, `incidents`, `employees`, `documents`) for populating navigation pickers and graph visualizers.
+
+#### Response `200 OK`
+```json
+{
+  "services": ["auth-service", "notification-hub", "order-processing-service", "payment-service"],
+  "teams": ["Core Infrastructure", "Orders Squad", "Payments Platform", "Security Core"],
+  "incidents": ["INC-2024-891"],
+  "employees": ["David Kim", "Elena Rostova", "Marcus Vance", "Sarah Chen"],
+  "documents": ["escalation-matrix-sla.md", "INC-2024-891-payment-timeout.md", "RB-PAY-04-payment-recovery.md", "service-catalog-and-dependencies.md", "team-ownership-roster.md"]
 }
 ```
 
