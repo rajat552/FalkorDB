@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
@@ -25,10 +26,22 @@ from app.engine.pipeline import query_company_brain
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("company_brain")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        init_schema()
+        logger.info("FalkorDB graph schema initialized successfully.")
+    except Exception as e:
+        logger.warning(f"Could not initialize schema on startup: {e}")
+    yield
+
+
 app = FastAPI(
     title="Company Brain API",
     description="Enterprise Knowledge Intelligence Assistant with GraphRAG and Verifiable Citations",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -40,14 +53,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Startup hook
-@app.on_event("startup")
-def on_startup():
-    try:
-        init_schema()
-        logger.info("FalkorDB graph schema initialized successfully.")
-    except Exception as e:
-        logger.warning(f"Could not initialize schema on startup: {e}")
 
 
 # --- Models ---
@@ -132,13 +137,51 @@ def remove_document(document_id: str):
 
 
 @app.post("/api/documents/reindex", summary="Re-index synthetic enterprise dataset")
-def reindex_dataset():
+def reindex_dataset(force: bool = Query(False, description="Purge and re-ingest fresh")):
     try:
-        results = ingest_enterprise_dataset()
-        return {"status": "reindexed", "ingested_count": len(results), "documents": results}
+        data = ingest_enterprise_dataset(force=force)
+        return {
+            "status": "reindexed",
+            "ingested_count": len(data.get("ingested", [])),
+            "skipped_count": len(data.get("skipped", [])),
+            "total_documents": data.get("total_active", 0),
+            "documents": data.get("ingested", []),
+        }
     except Exception as e:
         logger.error(f"Reindexing error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/graph/entities", summary="Get all distinct entities grouped by type")
+def get_entities():
+    graph = get_graph()
+    try:
+        srv_res = graph.query("MATCH (s:Service) RETURN s.name, s.tier, s.status ORDER BY s.name").result_set
+        services = [{"name": r[0], "tier": r[1], "status": r[2]} for r in srv_res if r and r[0]]
+
+        team_res = graph.query("MATCH (t:Team) RETURN t.name, t.lead ORDER BY t.name").result_set
+        teams = [{"name": r[0], "lead": r[1]} for r in team_res if r and r[0]]
+
+        inc_res = graph.query("MATCH (i:Incident) RETURN i.id, i.title, i.severity, i.status ORDER BY i.id").result_set
+        incidents = [{"id": r[0], "title": r[1], "severity": r[2], "status": r[3]} for r in inc_res if r and r[0]]
+
+        emp_res = graph.query("MATCH (e:Employee) OPTIONAL MATCH (e)-[:MEMBER_OF]->(t:Team) RETURN e.name, e.role, t.name ORDER BY e.name").result_set
+        employees = [{"name": r[0], "role": r[1], "team": r[2]} for r in emp_res if r and r[0]]
+
+        doc_res = graph.query("MATCH (d:Document) RETURN d.id, d.filename, d.title ORDER BY d.filename").result_set
+        documents = [{"id": r[0], "filename": r[1], "title": r[2]} for r in doc_res if r and r[0]]
+
+        return {
+            "services": services,
+            "teams": teams,
+            "incidents": incidents,
+            "employees": employees,
+            "documents": documents,
+        }
+    except Exception as e:
+        logger.error(f"Error fetching entities: {e}")
+        return {"services": [], "teams": [], "incidents": [], "employees": [], "documents": [], "error": str(e)}
+
 
 
 
