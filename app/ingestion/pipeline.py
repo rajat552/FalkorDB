@@ -281,12 +281,39 @@ def delete_document(document_id: str, graph_name: Optional[str] = None) -> Dict[
     }
 
 
-def ingest_enterprise_dataset(graph_name: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Ingest all synthetic enterprise documents from data/enterprise/ directory."""
+def ingest_enterprise_dataset(
+    graph_name: Optional[str] = None,
+    force: bool = False,
+) -> Dict[str, Any]:
+    """
+    Ingest all synthetic enterprise documents from data/enterprise/ directory.
+    If force=True, existing enterprise dataset documents are cleanly purged first
+    to regenerate ontology nodes and relationships with updated extractors.
+    """
     results = []
+    skipped = []
+    graph = get_graph(graph_name)
+
     if not ENTERPRISE_DATA_DIR.exists():
         logger.warning(f"Enterprise data directory {ENTERPRISE_DATA_DIR} does not exist.")
-        return results
+        return {"ingested": [], "skipped": [], "total_active": 0}
+
+    if force:
+        logger.info("Force re-indexing: cleaning existing enterprise documents from FalkorDB...")
+        for root, _, files in os.walk(ENTERPRISE_DATA_DIR):
+            for file in files:
+                file_path = Path(root) / file
+                if file_path.suffix.lower() in [".md", ".txt"]:
+                    with open(file_path, "rb") as f:
+                        f_bytes = f.read()
+                    f_hash = compute_content_hash(f_bytes)
+                    base_name = os.path.basename(file).replace("'", "\\'")
+                    existing = graph.query(
+                        f"MATCH (d:Document) WHERE d.content_hash = '{f_hash}' OR d.filename = '{base_name}' RETURN d.id"
+                    ).result_set
+                    for r in existing:
+                        delete_document(r[0], graph_name=graph_name)
+
 
     for root, _, files in os.walk(ENTERPRISE_DATA_DIR):
         for file in files:
@@ -298,9 +325,17 @@ def ingest_enterprise_dataset(graph_name: Optional[str] = None) -> List[Dict[str
                     rel_name = file_path.relative_to(ENTERPRISE_DATA_DIR).as_posix()
                     res = ingest_file(filename=rel_name, content=content, graph_name=graph_name)
                     results.append(res)
-                except DuplicateDocumentError:
+                except DuplicateDocumentError as e:
                     logger.info(f"Skipping already ingested document: {file}")
+                    skipped.append({"filename": file, "existing_id": e.existing_document_id})
                 except Exception as e:
                     logger.error(f"Error ingesting {file}: {e}")
                     raise e
-    return results
+
+    all_docs = list_documents(graph_name)
+    return {
+        "ingested": results,
+        "skipped": skipped,
+        "total_active": len(all_docs),
+    }
+
