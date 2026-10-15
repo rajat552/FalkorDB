@@ -1,0 +1,23 @@
+matrix:
+  - name: Markdown
+    sources:
+      - 'README.md'
+      - 'docs/**/*.md'
+    default_encoding: utf-8
+    pipeline:
+      - pyspelling.filters.html:
+          comments: false
+          ignores:
+            - code
+            - pre
+      - pyspelling.filters.url:
+      - pyspelling.filters.context:
+          context_visible: false
+          delimiters:
+            # Multiline code blocks
+            - open: '(?s)^(?P<open>`{3,})[a-z0-9_-]*\n'
+              close: '^(?P=open)$'
+            # Inline code
+            - open: '`'
+              close: '`'
+    expect_match: false
