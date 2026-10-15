@@ -47,7 +47,15 @@ def retrieve_graph_evidence(query: str, graph_name: Optional[str] = None) -> Ret
 
     # 1. Identify query entity keywords
     known_services = ["payment-service", "auth-service", "order-processing-service", "notification-hub"]
+    try:
+        db_srv_res = graph.query("MATCH (s:Service) RETURN s.name").result_set
+        for r in db_srv_res:
+            if r and r[0] and r[0] not in known_services:
+                known_services.append(r[0])
+    except Exception:
+        pass
     matched_services = [s for s in known_services if s in q_normalized or s.split("-")[0] in q_normalized]
+
 
     matched_incidents = re.findall(r"\b(INC-\d{4}-\d+)\b", query, re.IGNORECASE)
     matched_runbooks = re.findall(r"\b(RB-[A-Z]+-\d{2,3})\b", query, re.IGNORECASE)
@@ -242,9 +250,97 @@ def retrieve_graph_evidence(query: str, graph_name: Optional[str] = None) -> Ret
         except Exception as e:
             logger.debug(f"Policy query failed: {e}")
 
+    # 6b. Service Dependencies Traversal
+    if any(k in q_normalized for k in ["depend", "dependencies", "downstream", "upstream", "calls"]):
+        dep_filter = ""
+        if matched_services:
+            target_s = matched_services[0]
+            dep_filter = f"WHERE s.name = '{target_s}' OR target.name = '{target_s}'"
+        cypher_dep = f"""
+        MATCH (s:Service)-[r:DEPENDS_ON]->(target:Service)
+        {dep_filter}
+        RETURN s.name, target.name
+        LIMIT 10
+        """
+        try:
+            for row in graph.query(cypher_dep).result_set:
+                s_src, s_tgt = row
+                evidence.entities.append({"label": "Service", "name": s_src})
+                evidence.entities.append({"label": "Service", "name": s_tgt})
+                evidence.relationships.append({"from": s_src, "type": "DEPENDS_ON", "to": s_tgt})
+                evidence.raw_facts.append(f"Service '{s_src}' depends on '{s_tgt}'.")
+        except Exception as e:
+            logger.debug(f"Dependency traversal failed: {e}")
+
+        # Also pull service spec chunks
+        dep_docs_q = """
+        MATCH (d:Document) WHERE d.filename CONTAINS 'spec' OR d.filename CONTAINS 'service'
+        MATCH (d)-[:CONTAINS]->(c:EvidenceChunk)
+        RETURN d.id, d.filename, d.title, c.id, c.text
+        LIMIT 2
+        """
+        try:
+            for row in graph.query(dep_docs_q).result_set:
+                d_id, d_fn, d_t, c_id, c_text = row
+                evidence.entities.append({"label": "Document", "id": d_id, "filename": d_fn, "title": d_t})
+                evidence.chunks.append({
+                    "chunk_id": c_id,
+                    "document_id": d_id,
+                    "filename": d_fn,
+                    "text": c_text,
+                })
+        except Exception:
+            pass
+
+    # 6c. Service Catalog Traversal
+    if any(k in q_normalized for k in ["all services", "list services", "what services", "service catalog", "which services"]):
+        cypher_cat = """
+        MATCH (s:Service)
+        OPTIONAL MATCH (t:Team)-[:OWNS]->(s)
+        RETURN s.name, s.tier, s.status, t.name
+        ORDER BY s.name
+        """
+        try:
+            for row in graph.query(cypher_cat).result_set:
+                s_name, s_tier, s_status, t_name = row
+                evidence.entities.append({"label": "Service", "name": s_name, "tier": s_tier, "status": s_status})
+                if t_name:
+                    evidence.entities.append({"label": "Team", "name": t_name})
+                    evidence.relationships.append({"from": t_name, "type": "OWNS", "to": s_name})
+                    evidence.raw_facts.append(f"Service '{s_name}' ({s_tier}) is owned by '{t_name}'.")
+        except Exception as e:
+            logger.debug(f"Service catalog traversal failed: {e}")
+
+        spec_q = """
+        MATCH (d:Document) WHERE d.filename CONTAINS 'roster' OR d.filename CONTAINS 'spec'
+        MATCH (d)-[:CONTAINS]->(c:EvidenceChunk)
+        RETURN d.id, d.filename, d.title, c.id, c.text
+        LIMIT 2
+        """
+        try:
+            for row in graph.query(spec_q).result_set:
+                d_id, d_fn, d_t, c_id, c_text = row
+                evidence.entities.append({"label": "Document", "id": d_id, "filename": d_fn, "title": d_t})
+                evidence.chunks.append({
+                    "chunk_id": c_id,
+                    "document_id": d_id,
+                    "filename": d_fn,
+                    "text": c_text,
+                })
+        except Exception:
+            pass
+
     # 7. Fallback Keyword Match on EvidenceChunks if chunks set is empty
+
     if len(evidence.chunks) == 0:
-        tokens = [w for w in re.findall(r"[a-zA-Z0-9_-]{3,}", query) if w.lower() not in {"what", "which", "where", "when", "does", "the", "and", "for", "with"}]
+        stop_words = {
+            "what", "which", "where", "when", "does", "the", "and", "for", "with",
+            "who", "whom", "whose", "why", "how", "this", "that", "these", "those",
+            "is", "are", "was", "were", "been", "being", "have", "has", "had",
+            "primary", "secondary", "maintainer", "owner", "service", "team",
+            "about", "from", "into", "onto", "under", "over", "latest", "first"
+        }
+        tokens = [w for w in re.findall(r"[a-zA-Z0-9_-]{4,}", query) if w.lower() not in stop_words]
         for token in tokens[:4]:
             q_token = token.replace("'", "\\'")
             cypher = f"""
