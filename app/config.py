@@ -11,6 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # FalkorDB Database Configuration
 FALKORDB_HOST = os.environ.get("FALKORDB_HOST", "127.0.0.1")
 FALKORDB_PORT = int(os.environ.get("FALKORDB_PORT", "6379"))
+FALKORDB_USERNAME = os.environ.get("FALKORDB_USERNAME", None)
 FALKORDB_PASSWORD = os.environ.get("FALKORDB_PASSWORD", None)
 FALKORDB_GRAPH = os.environ.get("FALKORDB_GRAPH", "company_brain")
 
