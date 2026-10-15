@@ -414,8 +414,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### Step 3: Start FalkorDB via Docker
+### Step 3: Start or Connect FalkorDB
 
+#### Option A: Local FalkorDB via Docker
 Launch the official FalkorDB container. This mounts local storage to `./data/falkordb` and exposes the Redis query port (`6379`) and web Studio (`3000`):
 
 ```bash
@@ -426,6 +427,12 @@ Verify that the container is running:
 ```bash
 docker ps
 ```
+
+#### Option B: FalkorDB Cloud (Managed Instance)
+Company Brain seamlessly supports [FalkorDB Cloud](https://app.falkordb.cloud/):
+1. Create a cloud database instance on FalkorDB Cloud.
+2. Note your connection host endpoint, port (e.g. `65122`), username (`falkordb`), and password.
+3. Configure these in `.env` (see [Environment Configuration](#environment-configuration-env)).
 
 ### Step 4: Install Dependencies
 
@@ -498,6 +505,7 @@ Open the following URLs in your browser:
 | `FALKORDB_HOST` | Host address of the FalkorDB instance | **Required** | `127.0.0.1` |
 | `FALKORDB_PORT` | Port of the FalkorDB instance | **Required** | `6379` |
 | `FALKORDB_GRAPH` | Graph identifier in FalkorDB | **Required** | `company_brain` |
+| `FALKORDB_USERNAME` | Optional ACL username for FalkorDB Cloud | Optional | `falkordb` *(leave empty for local)* |
 | `FALKORDB_PASSWORD` | Optional Redis password for FalkorDB | Optional | *(empty)* |
 | `OPENAI_API_KEY` | OpenAI API key for live GPT-4o generation | Optional | `sk-...` *(leave blank for local engine)* |
 | `GOOGLE_API_KEY` | Google Gemini API key for live generation | Optional | `AIza...` *(leave blank for local engine)* |
@@ -732,6 +740,25 @@ server {
     }
 }
 ```
+
+### Option C: Cloud Platform Deployment (FalkorDB Cloud + FastAPI App)
+
+Deploy Company Brain to any cloud container service (Render, Railway, Fly.io, AWS App Runner):
+
+1. **Deploy FalkorDB:** Provision an instance on [FalkorDB Cloud](https://app.falkordb.cloud/).
+2. **Seed Knowledge Graph:** Run `python ingest.py --force` with your cloud credentials to ingest all enterprise nodes and edges.
+3. **Configure Cloud Environment Variables:**
+   ```bash
+   FALKORDB_HOST=<your-cloud-host>
+   FALKORDB_PORT=<your-cloud-port>
+   FALKORDB_USERNAME=falkordb
+   FALKORDB_PASSWORD=<your-cloud-password>
+   FALKORDB_GRAPH=company_brain
+   PORT=8000
+   ```
+4. **Deploy Application Container:**
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `python run.py`
 
 ---
 
