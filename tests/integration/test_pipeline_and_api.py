@@ -1,16 +1,11 @@
+# pyright: reportMissingImports=false
 from __future__ import annotations
-import pytest
-from fastapi.testclient import TestClient
+
+import pytest  # type: ignore[import-untyped]
+from fastapi.testclient import TestClient  # type: ignore[import-untyped]
+
+from app.db import check_health, init_schema
 from app.main import app
-from app.db import check_health, get_graph, init_schema
-from app.ingestion.pipeline import (
-    ingest_file,
-    list_documents,
-    get_document_details,
-    delete_document,
-    DuplicateDocumentError,
-)
-from app.engine.pipeline import query_company_brain
 
 
 @pytest.fixture(scope="module")
