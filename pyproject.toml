@@ -25,6 +25,7 @@ google-generativeai = ">=0.8.0"
 fix-busted-json = ">=0.0.18"
 ollama = ">=0.2.1"
 httpx = ">=0.27.0"
+python-multipart = ">=0.0.9"
 
 [tool.poetry.group.test.dependencies]
 pytest = ">=8.2.0"
