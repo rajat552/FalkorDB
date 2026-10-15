@@ -6,6 +6,7 @@ import falkordb
 from app.config import (
     FALKORDB_HOST,
     FALKORDB_PORT,
+    FALKORDB_USERNAME,
     FALKORDB_PASSWORD,
     FALKORDB_GRAPH,
 )
@@ -15,11 +16,15 @@ logger = logging.getLogger(__name__)
 
 def get_db_client() -> falkordb.FalkorDB:
     """Connect to FalkorDB instance using configured credentials."""
-    return falkordb.FalkorDB(
-        host=FALKORDB_HOST,
-        port=FALKORDB_PORT,
-        password=FALKORDB_PASSWORD,
-    )
+    kwargs: Dict[str, Any] = {
+        "host": FALKORDB_HOST,
+        "port": FALKORDB_PORT,
+    }
+    if FALKORDB_USERNAME:
+        kwargs["username"] = FALKORDB_USERNAME
+    if FALKORDB_PASSWORD:
+        kwargs["password"] = FALKORDB_PASSWORD
+    return falkordb.FalkorDB(**kwargs)
 
 
 def get_graph(graph_name: Optional[str] = None) -> falkordb.Graph:
