@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261015_v7">
+  <link rel="stylesheet" href="style.css?v=20261015_v9">
 </head>
 <body>
   <!-- Ambient Warm Glow Background Elements -->
@@ -94,7 +94,7 @@
           <!-- Suggested Questions Pills -->
           <div class="suggested-queries">
             <span class="suggested-label">SUGGESTED QUERIES:</span>
-            <div class="query-pills" id="query-pills-container">
+            <div class="query-pills" id="query-pills-container" style="display: flex; flex-wrap: wrap; overflow: visible; gap: 8px;">
               <button class="query-pill" onclick="runSuggestedQuery(this)">Which team resolved the latest payment-service incident, what caused it, and which runbook documents the fix?</button>
               <button class="query-pill" onclick="runSuggestedQuery(this)">Who owns the auth-service and who is the team lead?</button>
               <button class="query-pill" onclick="runSuggestedQuery(this)">What internal services depend on auth-service?</button>
@@ -428,6 +428,6 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="app.js?v=20261015_v7"></script>
+  <script src="app.js?v=20261015_v9"></script>
 </body>
 </html>
